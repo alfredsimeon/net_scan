@@ -118,14 +118,35 @@ NET_SCAN automatically identifies **7 critical vulnerability types**:
 # Update package lists
 sudo apt update
 
-# Install required system libraries (use python3-dev, NOT python3.11-dev)
-sudo apt install -y python3-dev libxml2-dev libxslt1-dev zlib1g-dev build-essential
+# Install ALL required system libraries and build tools for Python 3.13
+# This includes: python dev, XML libraries, C/C++ compilers, Rust, and other build tools
+sudo apt install -y \
+  python3-dev \
+  libxml2-dev \
+  libxslt1-dev \
+  zlib1g-dev \
+  build-essential \
+  gcc \
+  g++ \
+  libssl-dev \
+  libffi-dev \
+  curl
+
+# Install Rust (needed for pydantic-core and other Rust-based packages)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+source $HOME/.cargo/env
 
 # Verify Python version
 python3 --version
 ```
 
-**Note:** Kali uses rolling releases, so you may have Python 3.13 or newer. Use `python3-dev` instead of `python3.11-dev`.
+**Important:** Installing with Python 3.13 requires additional build tools (gcc, g++, Rust) to compile native extensions. If you have issues, ensure all the packages above are installed.
+
+**Troubleshooting Kali Python 3.13:**
+- If you get `lxml` errors: `libxml2-dev` and `libxslt1-dev` must be installed
+- If you get `greenlet` errors: Older greenlet versions don't support Python 3.13, but newer ones do
+- If you get `pydantic-core` errors: You need Rust installed (`rustup`)
+- Requirements.txt now uses flexible versions (>=) instead of fixed (==) to support Python 3.13
 
 #### Ubuntu/Debian (with specific Python 3.11)
 
