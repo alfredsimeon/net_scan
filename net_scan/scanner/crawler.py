@@ -169,9 +169,28 @@ class WebCrawler:
                 return None
             
             page = await self.browser.new_page()
-            await page.goto(url, wait_until="networkidle", timeout=self.timeout * 1000)
             
-            # Wait for dynamic content
+            try:
+                # Wait for network to settle
+                await page.goto(url, wait_until="networkidle", timeout=self.timeout * 1000)
+            except:
+                # If networkidle times out, still try to get content
+                try:
+                    await page.goto(url, wait_until="domcontentloaded", timeout=self.timeout * 1000)
+                except:
+                    pass
+            
+            # Wait for dynamic content and additional resources to load
+            await asyncio.sleep(2)
+            
+            # Try to wait for common framework loaders
+            try:
+                await page.wait_for_load_state("networkidle", timeout=3000)
+            except:
+                pass
+            
+            # Scroll to trigger lazy loading and additional rendering
+            await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
             await asyncio.sleep(1)
             
             html = await page.content()
@@ -200,9 +219,10 @@ class WebCrawler:
         return None
     
     def _extract_forms(self, soup: BeautifulSoup, base_url: str) -> List[Dict]:
-        """Extract forms from HTML"""
+        """Extract forms from HTML including JavaScript-rendered forms"""
         forms = []
         
+        # Extract traditional HTML forms
         for form in soup.find_all('form'):
             form_data = {
                 'action': urljoin(base_url, form.get('action', '')),
@@ -222,22 +242,112 @@ class WebCrawler:
                 if field['name']:
                     form_data['fields'].append(field)
             
-            forms.append(form_data)
+            if form_data['action'] or form_data['fields']:  # Only add if has action or fields
+                forms.append(form_data)
+        
+        # Extract API endpoints from script tags (common in SPAs)
+        api_endpoints = self._extract_api_endpoints(soup, base_url)
+        
+        # Convert API endpoints to form-like structures for testing
+        for endpoint in api_endpoints:
+            forms.append({
+                'action': endpoint['url'],
+                'method': endpoint['method'],
+                'name': endpoint.get('name', ''),
+                'id': '',
+                'fields': endpoint.get('params', [])
+            })
         
         return forms
     
-    def _extract_inputs(self, soup: BeautifulSoup, base_url: str) -> List[Dict]:
-        """Extract all input fields"""
-        inputs = []
+    def _extract_api_endpoints(self, soup: BeautifulSoup, base_url: str) -> List[Dict]:
+        """Extract API endpoints from script tags and HTML attributes"""
+        endpoints = []
         
+        # Extract from fetch/axios calls in script tags
+        for script in soup.find_all('script'):
+            if script.string:
+                script_content = script.string.lower()
+                
+                # Look for common API patterns
+                api_patterns = [
+                    r'fetch\(["\'](/api/[^"\']+)["\']',
+                    r'axios\.(?:get|post|put|delete)\(["\'](/api/[^"\']+)["\']',
+                    r'\.get\(["\'](/api/[^"\']+)["\']',
+                    r'\.post\(["\'](/api/[^"\']+)["\']',
+                    r'url\s*:\s*["\'](/api/[^"\']+)["\']',
+                ]
+                
+                for pattern in api_patterns:
+                    matches = re.findall(pattern, script_content)
+                    for match in matches:
+                        full_url = urljoin(base_url, match)
+                        if self._is_same_domain(full_url):
+                            endpoints.append({
+                                'url': full_url,
+                                'method': 'POST',  # Most API endpoints accept POST
+                                'name': match.split('/')[-1],
+                                'params': []
+                            })
+        
+        # Extract from common input attributes (data-api, data-endpoint)
+        for elem in soup.find_all(attrs={'data-api': True}):
+            api_url = elem.get('data-api')
+            if api_url:
+                full_url = urljoin(base_url, api_url)
+                if self._is_same_domain(full_url):
+                    endpoints.append({
+                        'url': full_url,
+                        'method': 'POST',
+                        'name': 'api_endpoint',
+                        'params': []
+                    })
+        
+        return endpoints
+    
+    def _extract_inputs(self, soup: BeautifulSoup, base_url: str) -> List[Dict]:
+        """Extract all input fields from forms and standalone elements"""
+        inputs = []
+        seen = set()
+        
+        # From form inputs
         for input_field in soup.find_all(['input', 'textarea', 'select']):
-            if input_field.get('name'):
+            name = input_field.get('name')
+            if name and name not in seen:
                 inputs.append({
-                    'name': input_field.get('name'),
+                    'name': name,
                     'type': input_field.get('type', 'text'),
                     'value': input_field.get('value', ''),
                     'id': input_field.get('id', ''),
                 })
+                seen.add(name)
+        
+        # Extract from data attributes (common in React/Vue apps)
+        for elem in soup.find_all(attrs={"data-testid": True}):
+            name = elem.get('data-testid')
+            if name and name not in seen and 'input' in name.lower():
+                inputs.append({
+                    'name': name,
+                    'type': 'text',
+                    'value': '',
+                    'id': elem.get('id', ''),
+                })
+                seen.add(name)
+        
+        # Extract placeholders that suggest input fields
+        for elem in soup.find_all(placeholder=True):
+            placeholder = elem.get('placeholder', '').lower()
+            # Look for common input field hints
+            if any(hint in placeholder for hint in ['email', 'username', 'password', 'search', 'query', 'name']):
+                name = elem.get('name') or placeholder.replace(' ', '_')
+                if name and name not in seen:
+                    inputs.append({
+                        'name': name,
+                        'type': 'text',
+                        'value': '',
+                        'id': elem.get('id', ''),
+                    })
+                    seen.add(name)
         
         return inputs
     
