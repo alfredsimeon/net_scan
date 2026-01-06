@@ -61,12 +61,12 @@ class TerminalUI:
         }
         color = colors.get(status, Fore.WHITE)
         symbol = {
-            "INFO": "ℹ",
-            "SUCCESS": "✓",
-            "WARNING": "⚠",
-            "ERROR": "✗",
-            "CRITICAL": "⚡",
-        }.get(status, "•")
+            "INFO": "[i]",
+            "SUCCESS": "[+]",
+            "WARNING": "[!]",
+            "ERROR": "[-]",
+            "CRITICAL": "[!]",
+        }.get(status, "[*]")
         
         print(f"{color}{symbol} {message}{Style.RESET_ALL}")
     

@@ -129,13 +129,13 @@ def scan(
                 click.echo(f"  ✓ {report_type.upper()}: {file_path}")
         
         TerminalUI.print_section("SCAN COMPLETE")
-        click.echo(f"{click.style('✓ Scan completed successfully!', fg='green')}")
+        click.echo(f"{click.style('[+] Scan completed successfully!', fg='green')}")
         
     except KeyboardInterrupt:
-        click.echo(f"\n{click.style('✗ Scan interrupted by user', fg='red')}")
+        click.echo(f"\n{click.style('[-] Scan interrupted by user', fg='red')}")
         exit(1)
     except Exception as e:
-        click.echo(f"{click.style('✗ Error during scan:', fg='red')} {str(e)}")
+        click.echo(f"{click.style('[-] Error during scan:', fg='red')} {str(e)}")
         logger.error(f"Scan error: {e}", exc_info=True)
         exit(1)
 
