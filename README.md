@@ -114,106 +114,75 @@ NET_SCAN automatically identifies **7 critical vulnerability types**:
 
 #### Kali Linux (Latest - Python 3.13) - Playwright JavaScript Rendering
 
+**Step 1: Update and install Python with build tools**
 ```bash
-# Step 1: Update package lists
 sudo apt update
+sudo apt install -y python3-dev python3-venv build-essential gcc g++ curl wget git
+```
 
-# Step 2: Install Python and build tools
-sudo apt install -y \
-  python3-dev \
-  python3-venv \
-  build-essential \
-  gcc \
-  g++ \
-  curl \
-  wget \
-  git
+**Step 2: Install Chromium browser and Playwright dependencies**
+```bash
+sudo apt install -y chromium-browser chromium
+```
 
-# Step 3: Install Playwright browser dependencies (current versions for 2024+)
-# These are the actual libraries needed for Chromium browser rendering
-sudo apt install -y \
-  libnss3 \
-  libnspr4 \
-  libc6 \
-  libstdc++6 \
-  libx11-6 \
-  libxext6 \
-  libxrender1 \
-  libxrandr2 \
-  libgbm1 \
-  libdrm2 \
-  libdbus-1-3 \
-  libexpat1 \
-  libssl3 \
-  libcups2 \
-  libpulse0
+**Step 3: Install system libraries for JavaScript rendering**
+```bash
+sudo apt install -y libnss3 libnspr4 libx11-6 libxext6 libxrender1 libxrandr2 libgbm1 libdrm2 libdbus-1-3 libexpat1 libssl3 libcups2 libpulse0
+```
 
-# Step 4: Install XML/parsing libraries (for lxml)
-sudo apt install -y \
-  libxml2 \
-  libxml2-dev \
-  libxslt1.1 \
-  libxslt1-dev \
-  zlib1g-dev
+**Step 4: Install libraries for XML parsing (lxml)**
+```bash
+sudo apt install -y libxml2 libxml2-dev libxslt1.1 libxslt1-dev zlib1g-dev
+```
 
-# Step 5: Install Rust (required for pydantic-core)
+**Step 5: Install Rust (required for pydantic-core compilation)**
+```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 source $HOME/.cargo/env
-
-# Verify Python
-python3 --version
 ```
 
-**After installing above dependencies, create your venv and proceed:**
-
+**Step 6: Create virtual environment and install Python packages**
 ```bash
-# Create virtual environment
 python3 -m venv venv
 source venv/bin/activate
-
-# Upgrade pip
 python3 -m pip install --upgrade pip setuptools wheel
-
-# Install NET_SCAN and Playwright
 pip install -r requirements.txt
+```
 
-# Let Playwright automatically install missing browser dependencies
-python -m playwright install-deps
-
-# Install Playwright browsers (Chromium for JavaScript rendering)
+**Step 7: Install Playwright browsers**
+```bash
 python -m playwright install chromium
+```
 
-# Install NET_SCAN
+**Step 8: Install NET_SCAN package**
+```bash
 pip install -e .
+```
 
-# Verify
+**Step 9: Verify installation**
+```bash
+net-scan --version
+net-scan config
+```
+
+**All-in-One Installation (if you prefer one command):**
+```bash
+# Run all apt install commands at once
+sudo apt update && \
+sudo apt install -y python3-dev python3-venv build-essential gcc g++ curl wget git && \
+sudo apt install -y chromium-browser chromium && \
+sudo apt install -y libnss3 libnspr4 libx11-6 libxext6 libxrender1 libxrandr2 libgbm1 libdrm2 libdbus-1-3 libexpat1 libssl3 libcups2 libpulse0 && \
+sudo apt install -y libxml2 libxml2-dev libxslt1.1 libxslt1-dev zlib1g-dev && \
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+source $HOME/.cargo/env && \
+python3 -m venv venv && \
+source venv/bin/activate && \
+python3 -m pip install --upgrade pip setuptools wheel && \
+pip install -r requirements.txt && \
+python -m playwright install chromium && \
+pip install -e . && \
 net-scan --version
 ```
-
-**If Playwright still reports missing dependencies:**
-
-```bash
-# Automatic detection and installation
-sudo playwright install-deps chromium
-```
-
-**Why JavaScript Rendering Matters:**
-- Detects vulnerabilities in dynamically-loaded content
-- Tests AJAX endpoints and JavaScript-rendered forms
-- Finds XSS vulnerabilities in client-side code
-- Tests modern single-page applications (SPAs)
-
-**Current Library Names (2025):**
-- ✅ `libnss3`, `libnspr4` - Browser security libraries
-- ✅ `libx11-6`, `libxext6` - X11 display libraries
-- ✅ `libgbm1`, `libdrm2` - Graphics/GPU libraries
-- ✅ `libssl3` - SSL/TLS library (current version)
-- ✅ `libxml2`, `libxslt1.1` - XML parsing
-
-**Avoid (Obsolete in 2024+):**
-- ❌ libicu74 (renamed/consolidated)
-- ❌ libjpeg-turbo8 (not needed for scanning)
-- ❌ libvpx9 (VP9 codec not required)
 
 #### Ubuntu/Debian (with specific Python 3.11)
 
@@ -702,12 +671,36 @@ pip install -e .
 
 ### Issue: "Playwright browsers not found"
 
-**Solution:**
+**Solution (Kali Linux):**
 ```bash
-python -m playwright install
+# Install all system dependencies with apt
+sudo apt install -y chromium-browser chromium libnss3 libnspr4 libx11-6 libxext6 \
+  libxrender1 libxrandr2 libgbm1 libdrm2 libdbus-1-3 libexpat1 libssl3 libcups2 libpulse0
+
+# Then install Playwright browser
+python -m playwright install chromium
 ```
 
 This may take a few minutes and download ~500MB of browser binaries.
+
+**Verify JavaScript rendering works:**
+```bash
+python -c "
+import asyncio
+from playwright.async_api import async_playwright
+
+async def test():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        page = await browser.new_page()
+        await page.goto('https://example.com')
+        title = await page.title()
+        print(f'✅ JavaScript rendering works: {title}')
+        await browser.close()
+
+asyncio.run(test())
+"
+```
 
 ### Issue: Timeout Errors
 
