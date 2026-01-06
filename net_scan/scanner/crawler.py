@@ -76,26 +76,33 @@ class WebCrawler:
         """Start crawling"""
         logger.info(f"Starting crawl of {self.start_url}")
         
-        async with async_playwright() as p:
-            self.browser = await p.chromium.launch(headless=self.headless)
-            
-            while self.to_crawl and len(self.crawled_urls) < self.max_pages:
-                url, depth = self.to_crawl.pop(0)
+        try:
+            async with async_playwright() as p:
+                try:
+                    self.browser = await p.chromium.launch(headless=self.headless)
+                except Exception as e:
+                    logger.warning(f"JavaScript rendering unavailable: {e}")
+                    logger.info("Falling back to static HTML parsing (no JS rendering)")
+                    self.use_js_rendering = False
+                    self.browser = None
                 
-                # Skip if already crawled or out of depth
-                if url in self.crawled_urls or depth > self.max_depth:
-                    continue
-                
-                # Skip external URLs
-                if not self._is_same_domain(url):
-                    continue
-                
-                # Skip binary files
-                if self._has_excluded_extension(url):
-                    continue
-                
-                logger.debug(f"Crawling {url} (depth: {depth})")
-                page_data = await self._crawl_page(url)
+                while self.to_crawl and len(self.crawled_urls) < self.max_pages:
+                    url, depth = self.to_crawl.pop(0)
+                    
+                    # Skip if already crawled or out of depth
+                    if url in self.crawled_urls or depth > self.max_depth:
+                        continue
+                    
+                    # Skip external URLs
+                    if not self._is_same_domain(url):
+                        continue
+                    
+                    # Skip binary files
+                    if self._has_excluded_extension(url):
+                        continue
+                    
+                    logger.debug(f"Crawling {url} (depth: {depth})")
+                    page_data = await self._crawl_page(url)
                 
                 if page_data:
                     self.pages.append(page_data)
@@ -108,8 +115,12 @@ class WebCrawler:
                     
                     # Brief delay between requests
                     await asyncio.sleep(0.5)
-            
-            await self.browser.close()
+                
+                if self.browser:
+                    await self.browser.close()
+        
+        except Exception as e:
+            logger.error(f"Crawling error: {e}")
         
         logger.info(f"Crawl complete. Discovered {len(self.pages)} pages")
         return self.pages

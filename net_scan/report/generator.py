@@ -496,8 +496,8 @@ class ReportGenerator:
 </html>
 """
         
-        # Write to file
-        Path(output_file).write_text(html)
+        # Write to file with UTF-8 encoding (required for Unicode characters on Windows)
+        Path(output_file).write_text(html, encoding='utf-8')
         logger.info(f"HTML report saved to {output_file}")
         return output_file
     
@@ -515,7 +515,7 @@ class ReportGenerator:
             'findings': self.findings,
         }
         
-        Path(output_file).write_text(json.dumps(report, indent=2))
+        Path(output_file).write_text(json.dumps(report, indent=2), encoding='utf-8')
         logger.info(f"JSON report saved to {output_file}")
         return output_file
     
@@ -564,7 +564,7 @@ class ReportGenerator:
 
 """
         
-        Path(output_file).write_text(md)
+        Path(output_file).write_text(md, encoding='utf-8')
         logger.info(f"Markdown report saved to {output_file}")
         return output_file
     

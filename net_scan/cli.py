@@ -170,11 +170,13 @@ def interactive(url: str, profile: str):
     click.echo(f"\n{click.style('✓ Scan complete!', fg='green')}")
 
 @cli.command()
-def version():
+@click.pass_context
+def version(ctx):
     """Show version information"""
-    click.echo("NET_SCAN v1.0.0")
+    click.echo(click.style("NET_SCAN v1.0.0", fg="green", bold=True))
     click.echo("Production-Grade Web Vulnerability Scanner")
-    click.echo("Author: Security Research Team")
+    click.echo("Author: Fred (alfredsimeon)")
+    ctx.exit(0)
 
 @cli.command()
 def config():

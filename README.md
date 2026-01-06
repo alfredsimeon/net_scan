@@ -376,7 +376,7 @@ All three commands should complete without errors.
 
 ```bash
 # Make sure venv is activated first!
-net-scan scan https://target.com --profile quick
+net-scan scan scanme.nmap.org --profile quick
 ```
 
 This performs a quick vulnerability assessment with basic tests only.
@@ -385,7 +385,7 @@ This performs a quick vulnerability assessment with basic tests only.
 
 ```bash
 # This is the default balanced profile
-net-scan scan https://target.com
+net-scan scan scanme.nmap.org
 ```
 
 This performs comprehensive testing across all vulnerability types.
@@ -394,7 +394,7 @@ This performs comprehensive testing across all vulnerability types.
 
 ```bash
 # Extensive testing with advanced techniques
-net-scan scan https://target.com --profile aggressive
+net-scan scan scanme.nmap.org --profile aggressive
 ```
 
 This performs the most thorough scan with all available tests.
@@ -403,7 +403,7 @@ This performs the most thorough scan with all available tests.
 
 ```bash
 # Test only SQL Injection, XSS, and CSRF
-net-scan scan https://target.com --tests sqli,xss,csrf
+net-scan scan scanme.nmap.org --tests sqli,xss,csrf
 ```
 
 Available test types: `sqli`, `xss`, `csrf`, `cmd_injection`, `path_traversal`, `xxe`, `ssrf`
@@ -412,14 +412,14 @@ Available test types: `sqli`, `xss`, `csrf`, `cmd_injection`, `path_traversal`, 
 
 ```bash
 # Crawl 5 levels deep, test up to 200 pages
-net-scan scan https://target.com --depth 5 --max-pages 200
+net-scan scan scanme.nmap.org --depth 5 --max-pages 200
 ```
 
 ### With Burp Suite or OWASP ZAP Proxy
 
 ```bash
 # Route all traffic through Burp Suite
-net-scan scan https://target.com --proxy http://localhost:8080
+net-scan scan scanme.nmap.org --proxy http://localhost:8080
 ```
 
 Useful for:
@@ -444,21 +444,21 @@ Allows you to:
 
 ```bash
 # Generate HTML, JSON, and Markdown reports
-net-scan scan https://target.com --report html,json,markdown
+net-scan scan scanme.nmap.org --report html,json,markdown
 ```
 
 ### Custom Threads
 
 ```bash
 # Use 20 threads for faster scanning (be careful not to overload servers)
-net-scan scan https://target.com --threads 20
+net-scan scan scanme.nmap.org --threads 20
 ```
 
 ### Dry Run (Preview without testing)
 
 ```bash
 # Shows what would be scanned without actually testing
-net-scan scan https://target.com --dry-run
+net-scan scan scanme.nmap.org --dry-run
 ```
 
 ---
@@ -469,7 +469,7 @@ NET_SCAN provides three built-in scan profiles:
 
 ### Quick Profile (~5 minutes)
 ```bash
-net-scan scan https://target.com --profile quick
+net-scan scan scanme.nmap.org --profile quick
 ```
 - **Crawl depth:** 2 levels
 - **Max pages:** 30
@@ -478,8 +478,8 @@ net-scan scan https://target.com --profile quick
 
 ### Balanced Profile (~15 minutes - Default)
 ```bash
-net-scan scan https://target.com
-# or explicitly: net-scan scan https://target.com --profile balanced
+net-scan scan scanme.nmap.org
+# or explicitly: net-scan scan scanme.nmap.org --profile balanced
 ```
 - **Crawl depth:** 3 levels
 - **Max pages:** 100
@@ -488,7 +488,7 @@ net-scan scan https://target.com
 
 ### Aggressive Profile (~45+ minutes)
 ```bash
-net-scan scan https://target.com --profile aggressive
+net-scan scan scanme.nmap.org --profile aggressive
 ```
 - **Crawl depth:** 5 levels
 - **Max pages:** 500
@@ -512,7 +512,7 @@ Edit `net_scan/utils/payloads.py` to customize:
 
 ```bash
 # Increase timeout to 60 seconds
-net_scan scan https://target.com --timeout 60
+net-scan scan scanme.nmap.org --timeout 60
 ```
 
 Default: 10 seconds
@@ -521,7 +521,7 @@ Default: 10 seconds
 
 ```bash
 # Use 15 concurrent threads (caution: may impact target server)
-net-scan scan https://target.com --threads 15
+net-scan scan scanme.nmap.org --threads 15
 ```
 
 Default: 5 threads
@@ -706,7 +706,7 @@ asyncio.run(test())
 
 **Solution:** Increase the timeout value
 ```bash
-net-scan scan https://target.com --timeout 60
+net-scan scan scanme.nmap.org --timeout 60
 ```
 
 Default is 10 seconds. Increase for slow servers.
@@ -734,7 +734,7 @@ pip install -e .
 # For other proxies: Use your actual proxy URL and port
 
 # Then retry
-net-scan scan https://target.com --proxy http://localhost:8080
+net-scan scan scanme.nmap.org --proxy http://localhost:8080
 ```
 
 ### Issue: JavaScript Not Rendering
