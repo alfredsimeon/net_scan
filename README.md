@@ -1,221 +1,754 @@
 # NET_SCAN - Web Vulnerability Scanner
 
-**Production-grade vulnerability scanner for identifying security flaws before attackers do.**
+**Production-grade web vulnerability scanner for identifying security flaws before attackers do.**
+
+## 📋 Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Setup & Activation](#setup--activation)
+- [Verification](#verification)
+- [Usage Walkthrough](#usage-walkthrough)
+- [Scan Profiles](#scan-profiles)
+- [Advanced Configuration](#advanced-configuration)
+- [Report Output](#report-output)
+- [Troubleshooting](#troubleshooting)
+- [Architecture](#architecture)
+- [Security & Legal](#security--legal)
+- [About](#about)
+
+---
 
 ## Overview
 
 NET_SCAN is an advanced, automated web application vulnerability scanner designed for security professionals and penetration testers. It combines intelligent crawling, comprehensive vulnerability testing, and professional reporting to deliver actionable security insights.
 
+### What This Tool Does
+
+NET_SCAN automatically identifies **7 critical vulnerability types**:
+
+1. **SQL Injection (SQLi)** - Database attack vectors
+   - Time-based blind, error-based, union-based, boolean-based blind
+   - CVSS: 8.2-9.1
+
+2. **Cross-Site Scripting (XSS)** - JavaScript injection attacks
+   - Reflected, stored, and DOM-based XSS detection
+   - CVSS: 7.5
+
+3. **Cross-Site Request Forgery (CSRF)** - Request forgery attacks
+   - Token detection and SameSite validation
+   - CVSS: 6.5
+
+4. **OS Command Injection** - Operating system command execution
+   - Time-based detection with multiple separators
+   - CVSS: 9.8
+
+5. **Path Traversal** - Unauthorized file system access
+   - Directory traversal and file disclosure testing
+   - CVSS: 7.5
+
+6. **XML External Entity (XXE)** - XML-based attacks
+   - File disclosure and blind XXE testing
+   - CVSS: 8.1
+
+7. **Server-Side Request Forgery (SSRF)** - Internal network access
+   - Metadata endpoint and protocol testing
+   - CVSS: 7.8
+
+---
+
 ## Features
 
 ### Advanced Vulnerability Detection
-- **SQL Injection** (Time-based, Error-based, Union-based, Blind)
-- **Cross-Site Scripting (XSS)** (Reflected, Stored, DOM-based)
-- **CSRF** (Cross-Site Request Forgery)
-- **Command Injection** (OS command execution)
-- **Path Traversal** (Directory traversal, File inclusion)
-- **XXE** (XML External Entity attacks)
-- **SSRF** (Server-Side Request Forgery)
-- **Insecure Deserialization**
-- **File Upload Vulnerabilities**
-- **Open Redirects**
-- **Security Headers Analysis**
-- **API Endpoint Enumeration**
+- **7 vulnerability types** with multiple detection techniques
+- **Context-aware payloads** - Adjusts tests based on parameter type
+- **Multi-stage validation** - Reduces false positives
+- **WAF bypass techniques** - Payload obfuscation and encoding
+- **Response pattern analysis** - Intelligent heuristics
 
 ### Intelligent Crawling
-- JavaScript rendering support (Headless browser)
-- Session/Cookie management
-- Authentication support (Basic, Form-based)
-- Robots.txt & Sitemap.xml parsing
-- Crawl depth limiting & URL filtering
-- Rate limiting & throttling
-- User-Agent rotation
+- **JavaScript rendering** - Headless browser with Playwright
+- **Session management** - Maintains cookies across requests
+- **Form detection** - Identifies and analyzes HTML forms
+- **Dynamic content** - Handles AJAX and dynamic page loads
+- **Authentication support** - Basic and form-based auth
+- **Rate limiting** - Respects server load
+- **URL deduplication** - Prevents redundant testing
+- **Robots.txt & Sitemap parsing** - Intelligent discovery
 
 ### Professional Reporting
-- HTML reports with charts and severity breakdown
-- JSON export for automation
-- Markdown summaries
-- CVSS scoring for each vulnerability
-- Remediation recommendations
-- Executive summaries
+- **HTML Reports** - Interactive, browser-viewable with charts and severity breakdown
+- **JSON Export** - Machine-readable for automation and integration
+- **Markdown Summaries** - Version-control friendly text format
+- **CVSS Scoring** - Industry-standard vulnerability assessment (CVSS v3.1)
+- **Remediation Steps** - Actionable security recommendations
+- **Security References** - OWASP and CWE links
+- **Executive Summaries** - High-level vulnerability overview
 
 ### Terminal UI
-- Vintage retro terminal aesthetic
-- Real-time progress tracking
-- Color-coded severity levels
-- ASCII animations
-- Vulnerability count updates
+- **Vintage retro aesthetic** - ASCII art banner and animations
+- **Real-time progress tracking** - Live scanning updates
+- **Color-coded severity** - Visual vulnerability indicators
+- **Professional output** - Clean, polished CLI experience
+
+### Performance Optimization
+- **Multi-threaded/async scanning** - Concurrent vulnerability testing
+- **Intelligent payload ordering** - Optimal test sequencing
+- **Response caching** - Reduces redundant requests
+- **Connection pooling** - Efficient network resource usage
+- **Memory-efficient streaming** - Handles large responses
+
+---
+
+## Prerequisites
+
+- **Python 3.11 or higher**
+- **pip** (Python package manager)
+- **500 MB free disk space** (for Playwright browsers)
+- **Windows, Linux, or macOS** operating system
+
+### Verify Python Installation
+
+**Windows (PowerShell):**
+```powershell
+python --version
+```
+
+**Linux/macOS (Bash):**
+```bash
+python3 --version
+```
+
+**Expected output:** `Python 3.11.0` or higher
+
+If Python is not installed, download from [python.org](https://www.python.org/downloads/) and ensure "Add Python to PATH" is checked during installation.
+
+---
 
 ## Installation
 
-### Prerequisites
-- Python 3.11+
-- pip (Python package manager)
-
-### Quick Setup (Recommended: Using Virtual Environment)
-
-#### Windows
+### Step 1: Download or Clone Repository
 
 ```powershell
-# Navigate to project
+# Windows
+cd C:\Users\YourName\Desktop
+git clone https://github.com/alfredsimeon/net_scan.git
 cd net-scan
 
-# Create and activate virtual environment
+# Or if you don't have git, extract the ZIP file and navigate to it
+```
+
+```bash
+# Linux/macOS
+cd ~
+git clone https://github.com/alfredsimeon/net_scan.git
+cd net-scan
+```
+
+### Step 2: Create Virtual Environment
+
+**Virtual environments isolate NET_SCAN dependencies and prevent pip issues. Highly recommended!**
+
+#### Windows (PowerShell)
+
+```powershell
+# Create virtual environment
 python -m venv venv
+
+# Activate virtual environment
 .\\venv\\Scripts\\Activate.ps1
 
-# Install dependencies
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-python -m playwright install
-pip install -e .
-
-# Verify installation
-net-scan --version
+# If you get an execution policy error, run this first:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-#### Linux/macOS
+#### Linux/macOS (Bash)
 
 ```bash
-# Navigate to project
-cd net-scan
-
-# Create and activate virtual environment
+# Create virtual environment
 python3 -m venv venv
+
+# Activate virtual environment
 source venv/bin/activate
-
-# Install dependencies
-python3 -m pip install --upgrade pip
-pip install -r requirements.txt
-python -m playwright install
-pip install -e .
-
-# Verify installation
-net-scan --version
 ```
 
-**Why use virtual environments?**
-- Isolates project dependencies
-- Prevents conflicts with system Python packages
-- Solves most pip-related issues
-- Makes setup consistent across machines
+**You should see `(venv)` at the start of your terminal prompt after activation.**
 
-For detailed troubleshooting, see [QUICKSTART.md](QUICKSTART.md#troubleshooting-pip-issues)
+---
 
-## Quick Start
+## Setup & Activation
+
+### Complete Installation
+
+#### Windows (PowerShell)
+
+```powershell
+# Make sure you're in the project directory and venv is activated
+# (you should see (venv) in your prompt)
+
+# Upgrade pip
+python -m pip install --upgrade pip
+
+# Install required packages
+pip install -r requirements.txt
+
+# Install Playwright browsers (required for JavaScript rendering)
+python -m playwright install
+
+# Install NET_SCAN in development mode
+pip install -e .
+```
+
+#### Linux/macOS (Bash)
 
 ```bash
-# Basic scan
-net-scan scan https://target.com
+# Make sure you're in the project directory and venv is activated
+# (you should see (venv) in your prompt)
 
-# Aggressive scan with custom threads
-net-scan scan https://target.com --profile aggressive --threads 10
+# Upgrade pip
+python3 -m pip install --upgrade pip
 
-# Specific vulnerability tests
-net-scan scan https://target.com --tests sqli,xss,csrf
+# Install required packages
+pip install -r requirements.txt
 
-# With proxy (Burp Suite, ZAP)
-net-scan scan https://target.com --proxy http://localhost:8080
+# Install Playwright browsers (required for JavaScript rendering)
+python -m playwright install
 
-# Generate report in multiple formats
-net-scan scan https://target.com --report html,json,markdown
-
-# Interactive mode
-net-scan interactive
-
-# View detailed help
-net-scan scan --help
+# Install NET_SCAN in development mode
+pip install -e .
 ```
 
-## Configuration
+**Note:** The Playwright installation downloads browser binaries (~500MB) and may take a few minutes.
 
-### Scan Profiles
+### Using Virtual Environment Later
 
-- **quick**: Fast scan, basic tests only (~5 minutes)
-- **balanced**: Default, comprehensive testing (~15 minutes)
-- **aggressive**: Extensive testing, includes advanced techniques (~45 minutes)
-- **custom**: User-defined payload and test configuration
+Every time you want to use NET_SCAN, activate the virtual environment:
 
-### Custom Configuration
+**Windows:**
+```powershell
+.\\venv\\Scripts\\Activate.ps1
+```
 
-Edit `config/scan_profiles.yaml` to customize:
-- Payload dictionaries
-- Thread counts
-- Timeout values
-- Test parameters
-- Exclusion patterns
+**Linux/macOS:**
+```bash
+source venv/bin/activate
+```
+
+To exit the virtual environment:
+```bash
+deactivate
+```
+
+---
+
+## Verification
+
+After installation, verify everything works:
+
+```bash
+# Check NET_SCAN version
+net-scan --version
+
+# Check configuration
+net-scan config
+
+# View all available commands
+net-scan --help
+```
+
+All three commands should complete without errors.
+
+---
+
+## Usage Walkthrough
+
+### Basic Scan (5 minutes)
+
+```bash
+# Make sure venv is activated first!
+net-scan scan https://target.com --profile quick
+```
+
+This performs a quick vulnerability assessment with basic tests only.
+
+### Recommended Scan (15 minutes)
+
+```bash
+# This is the default balanced profile
+net-scan scan https://target.com
+```
+
+This performs comprehensive testing across all vulnerability types.
+
+### Aggressive Scan (45+ minutes)
+
+```bash
+# Extensive testing with advanced techniques
+net-scan scan https://target.com --profile aggressive
+```
+
+This performs the most thorough scan with all available tests.
+
+### Specific Vulnerability Tests
+
+```bash
+# Test only SQL Injection, XSS, and CSRF
+net-scan scan https://target.com --tests sqli,xss,csrf
+```
+
+Available test types: `sqli`, `xss`, `csrf`, `cmd_injection`, `path_traversal`, `xxe`, `ssrf`
+
+### Custom Crawl Depth and Pages
+
+```bash
+# Crawl 5 levels deep, test up to 200 pages
+net-scan scan https://target.com --depth 5 --max-pages 200
+```
+
+### With Burp Suite or OWASP ZAP Proxy
+
+```bash
+# Route all traffic through Burp Suite
+net-scan scan https://target.com --proxy http://localhost:8080
+```
+
+Useful for:
+- Logging all requests in Burp
+- Modifying requests on-the-fly
+- Inspecting scanner behavior
+
+### Interactive Mode
+
+```bash
+# Interactive menu for custom scanning
+net-scan interactive
+```
+
+Allows you to:
+- Select targets
+- Choose vulnerability tests
+- Customize parameters
+- Run scans step-by-step
+
+### Generate Multiple Report Formats
+
+```bash
+# Generate HTML, JSON, and Markdown reports
+net-scan scan https://target.com --report html,json,markdown
+```
+
+### Custom Threads
+
+```bash
+# Use 20 threads for faster scanning (be careful not to overload servers)
+net-scan scan https://target.com --threads 20
+```
+
+### Dry Run (Preview without testing)
+
+```bash
+# Shows what would be scanned without actually testing
+net-scan scan https://target.com --dry-run
+```
+
+---
+
+## Scan Profiles
+
+NET_SCAN provides three built-in scan profiles:
+
+### Quick Profile (~5 minutes)
+```bash
+net-scan scan https://target.com --profile quick
+```
+- **Crawl depth:** 2 levels
+- **Max pages:** 30
+- **Tests:** SQLi and XSS only
+- **Best for:** Initial reconnaissance
+
+### Balanced Profile (~15 minutes - Default)
+```bash
+net-scan scan https://target.com
+# or explicitly: net-scan scan https://target.com --profile balanced
+```
+- **Crawl depth:** 3 levels
+- **Max pages:** 100
+- **Tests:** All 7 vulnerability types
+- **Best for:** Standard security assessments (recommended)
+
+### Aggressive Profile (~45+ minutes)
+```bash
+net-scan scan https://target.com --profile aggressive
+```
+- **Crawl depth:** 5 levels
+- **Max pages:** 500
+- **Tests:** All vulnerability types with advanced techniques
+- **Best for:** Comprehensive deep security audits
+
+---
+
+## Advanced Configuration
+
+### Custom Payloads
+
+Edit `net_scan/utils/payloads.py` to customize:
+- SQL injection payloads
+- XSS test vectors
+- Command injection patterns
+- Path traversal attempts
+- XXE and SSRF probes
+
+### Timeout Configuration
+
+```bash
+# Increase timeout to 60 seconds
+net_scan scan https://target.com --timeout 60
+```
+
+Default: 10 seconds
+
+### Multiple Threads
+
+```bash
+# Use 15 concurrent threads (caution: may impact target server)
+net-scan scan https://target.com --threads 15
+```
+
+Default: 5 threads
+
+### Output Directory
+
+Reports are generated in the `reports/` directory by default.
+
+### Logging
+
+Check `logs/net_scan.log` for detailed execution logs.
+
+---
 
 ## Report Output
 
-Reports are generated in:
-- **HTML**: Interactive, browser-viewable with charts
-- **JSON**: Machine-readable, automation-friendly
-- **Markdown**: Text-based, version-control friendly
-- **PDF**: Executive summaries (optional)
+### Report Types Generated
 
-## Security Considerations
+After each scan, three reports are automatically generated in the `reports/` directory:
 
-- NET_SCAN should only be used on systems you own or have explicit permission to test
-- Always obtain written authorization before scanning
-- Use `--dry-run` mode to preview targets without testing
-- Proxy all traffic through your own test infrastructure when possible
-- Review findings carefully; some may require manual verification
+#### 1. HTML Report (`reports/report_[timestamp].html`)
+- **Best for:** Visual review and stakeholder presentations
+- **Features:**
+  - Interactive charts and severity breakdown
+  - Color-coded vulnerability levels
+  - Clickable findings with details
+  - Remediation steps
+  - Evidence and proof of concept
+  - Professional layout
+
+#### 2. JSON Report (`reports/report_[timestamp].json`)
+- **Best for:** Automation, CI/CD integration, and data processing
+- **Features:**
+  - Machine-readable format
+  - Complete metadata
+  - All findings with parameters
+  - Payload information
+  - CVSS scores
+  - Easy integration with other tools
+
+#### 3. Markdown Report (`reports/report_[timestamp].md`)
+- **Best for:** Version control, documentation, and sharing
+- **Features:**
+  - Plain text format
+  - Git-friendly
+  - Easy to share via email
+  - Print-friendly
+  - Good for documentation
+
+### Report Content
+
+All reports include:
+- **Executive Summary** - High-level overview with severity counts
+- **Vulnerability Findings** - Detailed information for each issue including:
+  - Vulnerability type and location (URL + parameter)
+  - Payload used for detection
+  - CVSS v3.1 score
+  - Evidence showing the vulnerability
+  - Detailed explanation
+  - Remediation recommendations
+  - Security best practices
+  - OWASP and CWE references
+- **Scan Statistics** - Pages crawled, tests performed, time taken
+- **Remediation Workflow** - Step-by-step fix guidance
+
+### Severity Levels
+
+| Level | CVSS Score | Action |
+|-------|-----------|---------|
+| **CRITICAL** | 9.0-10.0 | Requires immediate remediation |
+| **HIGH** | 7.0-8.9 | Should be addressed urgently |
+| **MEDIUM** | 4.0-6.9 | Should be remediated soon |
+| **LOW** | 0.1-3.9 | Lower risk, but should address |
+
+### Example Finding
+
+```json
+{
+  "type": "SQL Injection",
+  "location": "https://target.com/search?q=test",
+  "parameter": "q",
+  "method": "GET",
+  "severity": "CRITICAL",
+  "cvss_score": 8.6,
+  "payload": "1' AND SLEEP(5)--",
+  "evidence": "Response time increased from 0.12s to 5.45s",
+  "remediation": "Use parameterized queries or prepared statements"
+}
+```
+
+---
+
+## Troubleshooting
+
+### Issue: Virtual Environment Activation Fails
+
+**Error:** `cannot be loaded because running scripts is disabled`
+
+**Solution (Windows):**
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+Then retry activation with `.\\venv\\Scripts\\Activate.ps1`
+
+### Issue: "pip: command not found"
+
+**Solution 1 (Recommended):** Use Python module syntax
+```powershell
+# Windows
+python -m pip install -r requirements.txt
+
+# Linux/macOS
+python3 -m pip install -r requirements.txt
+```
+
+**Solution 2:** Ensure virtual environment is activated
+- Windows: You should see `(venv)` in your PowerShell prompt
+- Linux/macOS: You should see `(venv)` in your bash prompt
+
+If not activated, run:
+- Windows: `.\\venv\\Scripts\\Activate.ps1`
+- Linux/macOS: `source venv/bin/activate`
+
+**Solution 3:** Reinstall pip
+```powershell
+# Windows
+python -m ensurepip --upgrade
+
+# Linux/macOS
+python3 -m ensurepip --upgrade
+```
+
+### Issue: "net-scan: command not found"
+
+**Cause:** NET_SCAN not installed or virtual environment not active
+
+**Solution:**
+```bash
+# Activate venv first
+.\\venv\\Scripts\\Activate.ps1      # Windows
+source venv/bin/activate            # Linux/macOS
+
+# Reinstall NET_SCAN
+pip install -e .
+```
+
+### Issue: "Playwright browsers not found"
+
+**Solution:**
+```bash
+python -m playwright install
+```
+
+This may take a few minutes and download ~500MB of browser binaries.
+
+### Issue: Timeout Errors
+
+**Solution:** Increase the timeout value
+```bash
+net-scan scan https://target.com --timeout 60
+```
+
+Default is 10 seconds. Increase for slow servers.
+
+### Issue: "Module not found" errors
+
+**Cause:** Dependencies not properly installed or wrong Python environment
+
+**Solution:**
+```bash
+# Ensure venv is activated
+# Then reinstall dependencies
+pip install -r requirements.txt
+python -m playwright install
+pip install -e .
+```
+
+### Issue: Proxy Connection Errors
+
+**Solution:** Verify your proxy is running and accessible
+```bash
+# Test proxy connectivity
+# For Burp: http://localhost:8080
+# For OWASP ZAP: http://localhost:8080
+# For other proxies: Use your actual proxy URL and port
+
+# Then retry
+net-scan scan https://target.com --proxy http://localhost:8080
+```
+
+### Issue: JavaScript Not Rendering
+
+**Cause:** Playwright browsers not properly installed
+
+**Solution:**
+```bash
+# Reinstall Playwright browsers
+python -m playwright install chromium
+```
+
+### Issue: Slow Scanning Performance
+
+**Solutions:**
+1. Use `--profile quick` for initial scans
+2. Reduce `--max-pages` (try 50-100 instead of default)
+3. Adjust `--depth` based on URL structure
+4. Increase `--threads` carefully (monitor server load)
+
+---
 
 ## Architecture
 
 ```
 net-scan/
-├── scanner/
-│   ├── crawler.py          # Site crawling engine
-│   ├── engine.py           # Test execution
-│   ├── analyzer.py         # Response analysis
-│   └── detectors/          # Vulnerability modules
-├── report/
-│   ├── generator.py        # Report generation
-│   ├── severity.py         # CVSS scoring
-│   └── templates/          # HTML templates
-├── utils/
-│   ├── http_client.py      # HTTP handling
-│   ├── terminal_ui.py      # Terminal animations
-│   ├── payloads.py         # Payload generation
-│   └── logger.py           # Logging
-├── config/                 # Profiles and payloads
-├── db/                     # Database storage
-└── cli.py                  # CLI interface
+├── net_scan/
+│   ├── __init__.py                 # Package initialization
+│   ├── cli.py                      # Click CLI interface (150 lines)
+│   ├── scanner/
+│   │   ├── __init__.py
+│   │   ├── crawler.py              # Web crawler with JS rendering (350 lines)
+│   │   ├── engine.py               # Scanning orchestrator (250 lines)
+│   │   └── detectors/              # Vulnerability detection modules
+│   │       ├── __init__.py
+│   │       ├── sql_injection.py    # SQL injection (200 lines)
+│   │       ├── xss.py              # XSS detection (150 lines)
+│   │       ├── csrf.py             # CSRF detection (100 lines)
+│   │       ├── cmd_injection.py    # Command injection (120 lines)
+│   │       └── advanced.py         # XXE, SSRF, Path traversal (200 lines)
+│   ├── report/
+│   │   ├── __init__.py
+│   │   └── generator.py            # Multi-format report generation (500 lines)
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── logger.py               # Security logging (80 lines)
+│   │   ├── terminal_ui.py          # Retro terminal UI (200 lines)
+│   │   ├── http_client.py          # Async HTTP client (250 lines)
+│   │   └── payloads.py             # Payload generation (300 lines)
+│   ├── config/                     # Scan profiles & configuration
+│   └── db/                         # Findings database
+├── pyproject.toml                  # Project configuration
+├── requirements.txt                # Python dependencies (17 packages)
+├── README.md                       # This file
+├── LICENSE                         # MIT License
+└── .gitignore                      # Git ignore rules
 ```
 
-## Performance
+### Technology Stack
 
-- Multi-threaded/async scanning
-- Intelligent payload ordering
-- Response caching
-- Connection pooling
-- Memory-efficient streaming
-
-## Compliance
-
-- Designed for authorized security testing
-- OWASP Top 10 coverage
-- CVSS v3.1 severity scoring
-- GDPR-compliant data handling
-
-## License
-
-MIT License - See LICENSE file
-
-## Author
-
-**Fred (alfredsimeon)** - Creator and Maintainer
-- GitHub: https://github.com/alfredsimeon
-- Repository: https://github.com/alfredsimeon/net_scan
-
-## Support
-
-For issues, features, or questions:
-- GitHub Repository: https://github.com/alfredsimeon/net_scan
-- Create an issue in the repository
-- Visit: https://github.com/alfredsimeon
+- **Python 3.11+** - Async-native with type hints throughout
+- **Playwright** - JavaScript-capable web crawling with headless Chrome
+- **asyncio + aiohttp** - Concurrent HTTP testing with connection pooling
+- **BeautifulSoup4 + lxml** - HTML/XML parsing
+- **Click** - Professional CLI framework
+- **Jinja2** - HTML report template generation
+- **SQLAlchemy** - Database ORM
+- **cryptography** - Secure data handling
+- **pydantic** - Data validation
+- **rich** - Enhanced terminal output
+- **colorama** - Cross-platform colored text
 
 ---
 
-**DISCLAIMER**: This tool is provided for authorized security testing only. Unauthorized access to computer systems is illegal. Always obtain written permission before scanning.
+## Security & Legal
+
+### ⚠️ Important Legal Notice
+
+**NET_SCAN should ONLY be used on systems you own or have explicit written permission to test.**
+
+Unauthorized access to computer systems is illegal under the:
+- Computer Fraud and Abuse Act (CFAA) in the US
+- Computer Misuse Act in the UK
+- Similar laws in other jurisdictions
+
+### Before Using NET_SCAN
+
+1. **Obtain Written Authorization** - Get explicit permission from the system owner
+2. **Define Scope** - Clearly specify which systems can be tested
+3. **Establish Timeline** - Agree on testing dates and times
+4. **Inform IT Teams** - Notify infrastructure teams to prevent false alarms
+5. **Use Isolated Environment** - Test on non-production systems first
+
+### Best Practices
+
+- Always use `--dry-run` first to preview targets
+- Test on systems you control before testing others
+- Proxy all traffic through your own test infrastructure
+- Review findings carefully; some may require manual verification
+- Keep detailed logs and reports for compliance
+- Use appropriate authentication for authorized access
+- Respect rate limiting and server resources
+
+### Compliance
+
+- OWASP Top 10 coverage
+- CVSS v3.1 severity scoring
+- GDPR-compliant data handling
+- Designed for authorized penetration testing
+
+---
+
+## About
+
+### Developer
+
+**Fred (alfredsimeon)**
+- Creator and Maintainer of NET_SCAN
+- GitHub: https://github.com/alfredsimeon
+- Repository: https://github.com/alfredsimeon/net_scan
+
+### License
+
+MIT License - See LICENSE file for details
+
+You are free to:
+- ✅ Use for authorized security testing
+- ✅ Modify and customize
+- ✅ Distribute and integrate
+- ✅ Use commercially (with proper authorization of test targets)
+
+### Support & Contributions
+
+- **Issues & Features:** Report on GitHub: https://github.com/alfredsimeon/net_scan/issues
+- **Questions:** Contact via GitHub profile
+- **Contributions:** Pull requests welcome!
+
+### Disclaimer
+
+This tool is provided "as is" without warranty. The author is not responsible for:
+- Unauthorized use of this tool
+- Damage caused by misuse
+- Legal consequences of unauthorized access
+- False positives or false negatives in findings
+
+---
+
+**Last Updated:** January 2026  
+**Version:** 1.0.0  
+**Status:** Production-Ready
