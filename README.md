@@ -112,68 +112,108 @@ NET_SCAN automatically identifies **7 critical vulnerability types**:
 
 **Linux users must install system libraries before installing Python dependencies.**
 
-#### Kali Linux (Latest - Python 3.13)
+#### Kali Linux (Latest - Python 3.13) - Playwright JavaScript Rendering
 
 ```bash
-# Update package lists
+# Step 1: Update package lists
 sudo apt update
 
-# Install ALL required system libraries and build tools for Python 3.13
-# This includes: python dev, XML libraries, C/C++ compilers, Rust, and Playwright browser dependencies
+# Step 2: Install Python and build tools
 sudo apt install -y \
   python3-dev \
-  libxml2-dev \
-  libxslt1-dev \
-  zlib1g-dev \
+  python3-venv \
   build-essential \
   gcc \
   g++ \
-  libssl-dev \
-  libffi-dev \
   curl \
-  libicu74 \
-  libxml2 \
-  libvpx9 \
-  libjpeg-turbo8 \
-  libxslt1.1 \
-  libatk-bridge2.0-0 \
-  libatk1.0-0 \
-  libatspi2.0-0 \
-  libcups2 \
-  libdbus-1-3 \
-  libdrm2 \
-  libexpat1 \
-  libgbm1 \
-  libglib2.0-0 \
-  libnspr4 \
-  libnss3 \
-  libwayland-client0 \
-  libx11-6 \
-  libxcb1 \
-  libxcomposite1 \
-  libxdamage1 \
-  libxext6 \
-  libxfixes3 \
-  libxkbcommon0 \
-  libxrandr2 \
-  libxrender1
+  wget \
+  git
 
-# Install Rust (needed for pydantic-core and other Rust-based packages)
+# Step 3: Install Playwright browser dependencies (current versions for 2024+)
+# These are the actual libraries needed for Chromium browser rendering
+sudo apt install -y \
+  libnss3 \
+  libnspr4 \
+  libc6 \
+  libstdc++6 \
+  libx11-6 \
+  libxext6 \
+  libxrender1 \
+  libxrandr2 \
+  libgbm1 \
+  libdrm2 \
+  libdbus-1-3 \
+  libexpat1 \
+  libssl3 \
+  libcups2 \
+  libpulse0
+
+# Step 4: Install XML/parsing libraries (for lxml)
+sudo apt install -y \
+  libxml2 \
+  libxml2-dev \
+  libxslt1.1 \
+  libxslt1-dev \
+  zlib1g-dev
+
+# Step 5: Install Rust (required for pydantic-core)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 source $HOME/.cargo/env
 
-# Verify Python version
+# Verify Python
 python3 --version
 ```
 
-**Important:** Installing with Python 3.13 requires additional build tools (gcc, g++, Rust) to compile native extensions. The Playwright browser runtime dependencies are also included above to avoid "missing dependencies" errors later.
+**After installing above dependencies, create your venv and proceed:**
 
-**Troubleshooting Kali Python 3.13:**
-- If you get `lxml` errors: Ensure `libxml2-dev` and `libxslt1-dev` are installed
-- If you get `greenlet` errors: Use flexible versions (>=) instead of fixed (==)
-- If you get `pydantic-core` errors: Ensure Rust is installed (`rustc --version`)
-- If you get Playwright browser errors: Run `sudo playwright install-deps` or ensure all `libicu74`, `libvpx9`, etc. are installed
-- Requirements.txt uses flexible versions (>=) to support Python 3.13
+```bash
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Upgrade pip
+python3 -m pip install --upgrade pip setuptools wheel
+
+# Install NET_SCAN and Playwright
+pip install -r requirements.txt
+
+# Let Playwright automatically install missing browser dependencies
+python -m playwright install-deps
+
+# Install Playwright browsers (Chromium for JavaScript rendering)
+python -m playwright install chromium
+
+# Install NET_SCAN
+pip install -e .
+
+# Verify
+net-scan --version
+```
+
+**If Playwright still reports missing dependencies:**
+
+```bash
+# Automatic detection and installation
+sudo playwright install-deps chromium
+```
+
+**Why JavaScript Rendering Matters:**
+- Detects vulnerabilities in dynamically-loaded content
+- Tests AJAX endpoints and JavaScript-rendered forms
+- Finds XSS vulnerabilities in client-side code
+- Tests modern single-page applications (SPAs)
+
+**Current Library Names (2025):**
+- ✅ `libnss3`, `libnspr4` - Browser security libraries
+- ✅ `libx11-6`, `libxext6` - X11 display libraries
+- ✅ `libgbm1`, `libdrm2` - Graphics/GPU libraries
+- ✅ `libssl3` - SSL/TLS library (current version)
+- ✅ `libxml2`, `libxslt1.1` - XML parsing
+
+**Avoid (Obsolete in 2024+):**
+- ❌ libicu74 (renamed/consolidated)
+- ❌ libjpeg-turbo8 (not needed for scanning)
+- ❌ libvpx9 (VP9 codec not required)
 
 #### Ubuntu/Debian (with specific Python 3.11)
 
@@ -668,27 +708,6 @@ python -m playwright install
 ```
 
 This may take a few minutes and download ~500MB of browser binaries.
-
-### Issue: Playwright Missing System Dependencies (Kali Linux)
-
-**Error:** `Host system is missing dependencies to run browsers`
-
-**Quick Fix:**
-```bash
-# Automatic dependency installation
-sudo playwright install-deps
-
-# OR manual installation
-sudo apt-get install -y libicu74 libxml2 libvpx9 libjpeg-turbo8 libxslt1.1 \
-  libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 libcups2 libdbus-1-3 libdrm2 \
-  libexpat1 libgbm1 libglib2.0-0 libnspr4 libnss3 libwayland-client0 libx11-6 \
-  libxcb1 libxcomposite1 libxdamage1 libxext6 libxfixes3 libxkbcommon0 libxrandr2 libxrender1
-```
-
-Then reinstall Playwright:
-```bash
-python -m playwright install
-```
 
 ### Issue: Timeout Errors
 
