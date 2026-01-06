@@ -119,7 +119,7 @@ NET_SCAN automatically identifies **7 critical vulnerability types**:
 sudo apt update
 
 # Install ALL required system libraries and build tools for Python 3.13
-# This includes: python dev, XML libraries, C/C++ compilers, Rust, and other build tools
+# This includes: python dev, XML libraries, C/C++ compilers, Rust, and Playwright browser dependencies
 sudo apt install -y \
   python3-dev \
   libxml2-dev \
@@ -130,7 +130,33 @@ sudo apt install -y \
   g++ \
   libssl-dev \
   libffi-dev \
-  curl
+  curl \
+  libicu74 \
+  libxml2 \
+  libvpx9 \
+  libjpeg-turbo8 \
+  libxslt1.1 \
+  libatk-bridge2.0-0 \
+  libatk1.0-0 \
+  libatspi2.0-0 \
+  libcups2 \
+  libdbus-1-3 \
+  libdrm2 \
+  libexpat1 \
+  libgbm1 \
+  libglib2.0-0 \
+  libnspr4 \
+  libnss3 \
+  libwayland-client0 \
+  libx11-6 \
+  libxcb1 \
+  libxcomposite1 \
+  libxdamage1 \
+  libxext6 \
+  libxfixes3 \
+  libxkbcommon0 \
+  libxrandr2 \
+  libxrender1
 
 # Install Rust (needed for pydantic-core and other Rust-based packages)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -140,13 +166,14 @@ source $HOME/.cargo/env
 python3 --version
 ```
 
-**Important:** Installing with Python 3.13 requires additional build tools (gcc, g++, Rust) to compile native extensions. If you have issues, ensure all the packages above are installed.
+**Important:** Installing with Python 3.13 requires additional build tools (gcc, g++, Rust) to compile native extensions. The Playwright browser runtime dependencies are also included above to avoid "missing dependencies" errors later.
 
 **Troubleshooting Kali Python 3.13:**
-- If you get `lxml` errors: `libxml2-dev` and `libxslt1-dev` must be installed
-- If you get `greenlet` errors: Older greenlet versions don't support Python 3.13, but newer ones do
-- If you get `pydantic-core` errors: You need Rust installed (`rustup`)
-- Requirements.txt now uses flexible versions (>=) instead of fixed (==) to support Python 3.13
+- If you get `lxml` errors: Ensure `libxml2-dev` and `libxslt1-dev` are installed
+- If you get `greenlet` errors: Use flexible versions (>=) instead of fixed (==)
+- If you get `pydantic-core` errors: Ensure Rust is installed (`rustc --version`)
+- If you get Playwright browser errors: Run `sudo playwright install-deps` or ensure all `libicu74`, `libvpx9`, etc. are installed
+- Requirements.txt uses flexible versions (>=) to support Python 3.13
 
 #### Ubuntu/Debian (with specific Python 3.11)
 
@@ -641,6 +668,27 @@ python -m playwright install
 ```
 
 This may take a few minutes and download ~500MB of browser binaries.
+
+### Issue: Playwright Missing System Dependencies (Kali Linux)
+
+**Error:** `Host system is missing dependencies to run browsers`
+
+**Quick Fix:**
+```bash
+# Automatic dependency installation
+sudo playwright install-deps
+
+# OR manual installation
+sudo apt-get install -y libicu74 libxml2 libvpx9 libjpeg-turbo8 libxslt1.1 \
+  libatk-bridge2.0-0 libatk1.0-0 libatspi2.0-0 libcups2 libdbus-1-3 libdrm2 \
+  libexpat1 libgbm1 libglib2.0-0 libnspr4 libnss3 libwayland-client0 libx11-6 \
+  libxcb1 libxcomposite1 libxdamage1 libxext6 libxfixes3 libxkbcommon0 libxrandr2 libxrender1
+```
+
+Then reinstall Playwright:
+```bash
+python -m playwright install
+```
 
 ### Issue: Timeout Errors
 
