@@ -108,6 +108,41 @@ NET_SCAN automatically identifies **7 critical vulnerability types**:
 - **500 MB free disk space** (for Playwright browsers)
 - **Windows, Linux, or macOS** operating system
 
+### System Dependencies (Linux/macOS)
+
+**Linux users must install system libraries before installing Python dependencies.**
+
+#### Ubuntu/Debian
+
+```bash
+# Install required system libraries for lxml and other dependencies
+sudo apt-get update
+sudo apt-get install -y python3.11-dev libxml2-dev libxslt1-dev zlib1g-dev
+```
+
+#### Fedora/RHEL/CentOS
+
+```bash
+# Install required system libraries
+sudo dnf install -y python3-devel libxml2-devel libxslt-devel zlib-devel
+```
+
+#### macOS
+
+```bash
+# Install using Homebrew
+brew install libxml2 libxslt
+
+# If you don't have Homebrew installed, download from https://brew.sh
+```
+
+#### Alpine Linux
+
+```bash
+# Install required system libraries
+apk add --no-cache python3-dev libxml2-dev libxslt-dev zlib-dev
+```
+
 ### Verify Python Installation
 
 **Windows (PowerShell):**

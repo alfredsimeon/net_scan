@@ -12,9 +12,12 @@ license = {text = "MIT"}
 authors = [
     {name = "Fred (alfredsimeon)", email = "security@netscan.dev"}
 ]
-repository = "https://github.com/alfredsimeon/net_scan"
-homepage = "https://github.com/alfredsimeon"
 keywords = ["security", "vulnerability", "scanner", "penetration-testing", "web-security"]
+
+[project.urls]
+Repository = "https://github.com/alfredsimeon/net_scan"
+Homepage = "https://github.com/alfredsimeon"
+Issues = "https://github.com/alfredsimeon/net_scan/issues"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
