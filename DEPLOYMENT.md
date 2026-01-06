@@ -126,44 +126,142 @@ net-scan/
 - 500 MB free disk space (for Playwright browsers)
 - Windows, Linux, or macOS
 
-### Installation Steps
+### Installation Steps - Using Virtual Environment (Recommended)
 
-```bash
-# 1. Clone or download repository
+Virtual environments isolate NET_SCAN dependencies and prevent pip issues.
+
+#### Windows (PowerShell)
+
+```powershell
+# 1. Navigate to project
 cd net-scan
 
-# 2. Install dependencies
+# 2. Create virtual environment
+python -m venv venv
+
+# 3. Activate it
+.\\venv\\Scripts\\Activate.ps1
+
+# 4. Upgrade pip
+python -m pip install --upgrade pip
+
+# 5. Install dependencies
 pip install -r requirements.txt
 
-# 3. Install Playwright browsers (required once)
-playwright install
+# 6. Install Playwright browsers
+python -m playwright install
 
-# 4. Install NET_SCAN package
+# 7. Install NET_SCAN
 pip install -e .
 
-# 5. Verify installation
-net-scan version
+# 8. Verify installation
+net-scan --version
 ```
+
+#### Linux/macOS (Bash)
+
+```bash
+# 1. Navigate to project
+cd net-scan
+
+# 2. Create virtual environment
+python3 -m venv venv
+
+# 3. Activate it
+source venv/bin/activate
+
+# 4. Upgrade pip
+python3 -m pip install --upgrade pip
+
+# 5. Install dependencies
+pip install -r requirements.txt
+
+# 6. Install Playwright browsers
+python -m playwright install
+
+# 7. Install NET_SCAN
+pip install -e .
+
+# 8. Verify installation
+net-scan --version
+```
+
+### Alternative: System-Wide Installation (Not Recommended)
+
+If you cannot use virtual environments:
+
+```bash
+# Windows
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+python -m playwright install
+pip install -e .
+
+# Linux/macOS
+python3 -m pip install --upgrade pip
+pip install -r requirements.txt
+python -m playwright install
+pip install -e .
+```
+
+⚠️ **Warning:** System-wide installation can cause conflicts. See [VENV_SETUP.md](VENV_SETUP.md) for troubleshooting.
 
 ## Usage Examples
 
-### Basic Scan
+### Basic Scan (Remember to activate venv first)
+
+```powershell
+# Windows - activate venv
+.\\venv\\Scripts\\Activate.ps1
+net-scan scan https://target.com
+```
+
 ```bash
+# Linux/macOS - activate venv
+source venv/bin/activate
 net-scan scan https://target.com
 ```
 
 ### With Proxy (Burp Suite)
+```powershell
+# Windows
+.\\venv\\Scripts\\Activate.ps1
+net-scan scan https://target.com --proxy http://localhost:8080
+```
+
 ```bash
+# Linux/macOS
+source venv/bin/activate
 net-scan scan https://target.com --proxy http://localhost:8080
 ```
 
 ### Specific Tests Only
+```powershell
+# Windows
+.\\venv\\Scripts\\Activate.ps1
+net-scan scan https://target.com --tests sqli,xss,csrf
+```
+
 ```bash
+# Linux/macOS
+source venv/bin/activate
 net-scan scan https://target.com --tests sqli,xss,csrf
 ```
 
 ### Custom Configuration
+```powershell
+# Windows
+.\\venv\\Scripts\\Activate.ps1
+net-scan scan https://target.com `
+  --profile aggressive `
+  --depth 5 `
+  --max-pages 200 `
+  --threads 10
+```
+
 ```bash
+# Linux/macOS
+source venv/bin/activate
 net-scan scan https://target.com \
   --profile aggressive \
   --depth 5 \
@@ -172,7 +270,15 @@ net-scan scan https://target.com \
 ```
 
 ### Interactive Mode
+```powershell
+# Windows
+.\\venv\\Scripts\\Activate.ps1
+net-scan interactive
+```
+
 ```bash
+# Linux/macOS
+source venv/bin/activate
 net-scan interactive
 ```
 

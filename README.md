@@ -50,23 +50,57 @@ NET_SCAN is an advanced, automated web application vulnerability scanner designe
 
 ### Prerequisites
 - Python 3.11+
-- Pip
+- pip (Python package manager)
 
-### Setup
+### Quick Setup (Recommended: Using Virtual Environment)
 
-```bash
-# Clone or extract the repository
+#### Windows
+
+```powershell
+# Navigate to project
 cd net-scan
 
+# Create and activate virtual environment
+python -m venv venv
+.\\venv\\Scripts\\Activate.ps1
+
 # Install dependencies
+python -m pip install --upgrade pip
 pip install -r requirements.txt
-
-# Install Playwright browsers
-playwright install
-
-# Install NET_SCAN
+python -m playwright install
 pip install -e .
+
+# Verify installation
+net-scan --version
 ```
+
+#### Linux/macOS
+
+```bash
+# Navigate to project
+cd net-scan
+
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+python3 -m pip install --upgrade pip
+pip install -r requirements.txt
+python -m playwright install
+pip install -e .
+
+# Verify installation
+net-scan --version
+```
+
+**Why use virtual environments?**
+- Isolates project dependencies
+- Prevents conflicts with system Python packages
+- Solves most pip-related issues
+- Makes setup consistent across machines
+
+For detailed troubleshooting, see [QUICKSTART.md](QUICKSTART.md#troubleshooting-pip-issues)
 
 ## Quick Start
 

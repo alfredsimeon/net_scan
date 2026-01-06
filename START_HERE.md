@@ -6,9 +6,16 @@ Welcome to **NET_SCAN**, a production-grade web vulnerability scanner.
 
 ### 📖 For First-Time Users
 **Start with:** [QUICKSTART.md](QUICKSTART.md)
-- 5-minute setup
+- 5-minute setup with virtual environment
 - Basic usage examples
 - Troubleshooting guide
+
+### 🔧 For Virtual Environment Setup
+**See:** [VENV_SETUP.md](VENV_SETUP.md) ⭐ **START HERE IF PIP ISSUES**
+- Detailed venv setup for Windows & Linux
+- pip troubleshooting
+- Best practices
+- Multiple Python versions
 
 ### 📚 For Complete Features
 **Read:** [README.md](README.md)
@@ -42,24 +49,55 @@ Welcome to **NET_SCAN**, a production-grade web vulnerability scanner.
 
 ---
 
-## ⚡ 30-Second Quick Start
+## ⚡ 30-Second Quick Start (with Virtual Environment)
 
-```bash
-# Step 1: Install dependencies
+### Windows
+```powershell
+# Step 1: Create virtual environment
+python -m venv venv
+
+# Step 2: Activate it
+.\\venv\\Scripts\\Activate.ps1
+
+# Step 3: Install dependencies
 pip install -r requirements.txt
-
-# Step 2: Install Playwright browsers
-playwright install
-
-# Step 3: Install NET_SCAN
+python -m playwright install
 pip install -e .
 
 # Step 4: Run a scan
 net-scan scan https://example.com
-
-# Step 5: Open reports
-# Check /reports/ directory for generated reports
 ```
+
+### Linux/macOS
+```bash
+# Step 1: Create virtual environment
+python3 -m venv venv
+
+# Step 2: Activate it
+source venv/bin/activate
+
+# Step 3: Install dependencies
+pip install -r requirements.txt
+python -m playwright install
+pip install -e .
+
+# Step 4: Run a scan
+net-scan scan https://example.com
+```
+
+---
+
+## ⚠️ Having pip Issues?
+
+If you're getting "pip: command not found" or other errors:
+
+1. **See [VENV_SETUP.md](VENV_SETUP.md)** for detailed troubleshooting
+2. **Use Python module syntax:**
+   ```bash
+   python -m pip install -r requirements.txt   # Windows
+   python3 -m pip install -r requirements.txt  # Linux/macOS
+   ```
+3. **Make sure virtual environment is activated** - you should see `(venv)` in your prompt
 
 ---
 
