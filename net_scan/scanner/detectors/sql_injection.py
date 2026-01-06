@@ -194,11 +194,27 @@ class SQLInjectionDetector:
         findings = []
         payloads = PayloadGenerator.get_sql_payloads("error_based")
         
+        baseline_response = await self._send_payload(url, param, "test", method)
+        baseline_content = baseline_response.get('content', '') if baseline_response else ""
+        baseline_has_error = self._has_sql_error(baseline_response) if baseline_response else False
+        
         for payload in payloads[:3]:
             try:
                 response = await self._send_payload(url, param, payload, method)
                 
-                if response and (self._has_sql_error(response) or self._has_syntax_error(response)):
+                if not response:
+                    continue
+                
+                current_content = response.get('content', '')
+                current_has_error = self._has_sql_error(response)
+                
+                # Only flag as SQLi if:
+                # 1. Error appears AFTER payload (wasn't in baseline)
+                # 2. AND error is clearly database-related
+                # 3. AND response changed significantly from baseline
+                if (current_has_error and not baseline_has_error and 
+                    len(current_content) != len(baseline_content)):
+                    
                     findings.append({
                         'type': 'SQL Injection (Error-based)',
                         'severity': 'CRITICAL',
@@ -217,15 +233,6 @@ class SQLInjectionDetector:
                 logger.debug(f"Error-based test error: {e}")
         
         return findings
-    
-    def _has_syntax_error(self, response: Dict) -> bool:
-        """Check for SQL syntax errors beyond standard signatures"""
-        content = response.get('content', '').lower()
-        syntax_indicators = [
-            'syntax', 'unexpected', 'error', 'invalid', 'exception',
-            'warning', 'fatal', 'failed', 'error', 'near'
-        ]
-        return any(indicator in content for indicator in syntax_indicators)
     
     async def _test_boolean_based(
         self,

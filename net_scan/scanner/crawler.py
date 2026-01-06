@@ -352,18 +352,44 @@ class WebCrawler:
         return inputs
     
     def _extract_links(self, soup: BeautifulSoup, base_url: str) -> List[str]:
-        """Extract links from HTML"""
+        """Aggressively extract all possible links from HTML"""
         links = []
         
+        # Standard links
         for link in soup.find_all('a', href=True):
             href = link.get('href', '')
             if href and not href.startswith('#'):
                 full_url = urljoin(base_url, href)
-                
-                # Remove fragments
-                full_url = full_url.split('#')[0]
-                
+                full_url = full_url.split('#')[0]  # Remove fragments
                 if full_url and self._is_same_domain(full_url):
+                    links.append(full_url)
+        
+        # Links from onclick attributes
+        for elem in soup.find_all(onclick=True):
+            onclick = elem.get('onclick', '')
+            if 'http' in onclick or '/' in onclick:
+                urls = re.findall(r"['\"](/[^'\"]+)['\"]|['\"]([a-z]+://[^'\"]+)['\"]", onclick)
+                for match in urls:
+                    url = match[0] or match[1]
+                    if url:
+                        full_url = urljoin(base_url, url)
+                        if self._is_same_domain(full_url):
+                            links.append(full_url)
+        
+        # Links from data attributes
+        for elem in soup.find_all(attrs={'data-url': True}):
+            data_url = elem.get('data-url')
+            if data_url:
+                full_url = urljoin(base_url, data_url)
+                if self._is_same_domain(full_url):
+                    links.append(full_url)
+        
+        # Links from href attributes in any element
+        for elem in soup.find_all(href=True):
+            href = elem.get('href', '')
+            if href and href.startswith('/'):
+                full_url = urljoin(base_url, href)
+                if self._is_same_domain(full_url):
                     links.append(full_url)
         
         return list(set(links))  # Remove duplicates
@@ -400,10 +426,10 @@ class WebCrawler:
         return params
     
     def get_testable_endpoints(self) -> List[Dict]:
-        """Get all testable endpoints (forms + URL params)"""
+        """Get all testable endpoints - forms, URL params, paths, and common endpoints"""
         endpoints = []
         
-        # URL parameters
+        # 1. Extract URL parameters from discovered pages
         for page in self.pages:
             if page.parameters:
                 endpoints.append({
@@ -413,14 +439,55 @@ class WebCrawler:
                     'type': 'url_param'
                 })
         
-        # Forms
+        # 2. Extract form endpoints
         for page in self.pages:
             for form in page.forms:
+                params = [f['name'] for f in form.get('fields', []) if f.get('name')]
+                if params:  # Only if form has fields
+                    endpoints.append({
+                        'url': form['action'],
+                        'method': form['method'],
+                        'parameters': params,
+                        'type': 'form'
+                    })
+        
+        # 3. Inject common test parameters into discovered URLs (advanced testing)
+        common_params = ['id', 'search', 'query', 'q', 'name', 'user', 'file', 'path', 'category', 'product', 'page', 'sort', 'filter', 'email', 'username']
+        for page in self.pages:
+            # Only add if no parameters already found on this URL
+            if not page.parameters:
+                for param in common_params[:5]:  # Limit to 5 to avoid explosion
+                    endpoints.append({
+                        'url': page.url,
+                        'method': 'GET',
+                        'parameters': [param],
+                        'type': 'injected_param'
+                    })
+        
+        # 4. Add endpoints for direct path traversal testing on each discovered URL
+        for page in self.pages:
+            if page.url:
                 endpoints.append({
-                    'url': form['action'],
-                    'method': form['method'],
-                    'parameters': [f['name'] for f in form.get('fields', [])],
-                    'type': 'form'
+                    'url': page.url,
+                    'method': 'GET',
+                    'parameters': [],  # Will test path itself
+                    'type': 'path_test'
+                })
+        
+        # 5. Add common admin/sensitive endpoints (if not already discovered)
+        base_url = self.start_url.rsplit('/', 1)[0]
+        common_endpoints = [
+            '/admin', '/api', '/api/v1', '/api/admin', '/search', '/download',
+            '/upload', '/login', '/config', '/status', '/health', '/debug'
+        ]
+        for endpoint_path in common_endpoints:
+            test_url = urljoin(base_url, endpoint_path)
+            if self._is_same_domain(test_url):
+                endpoints.append({
+                    'url': test_url,
+                    'method': 'GET',
+                    'parameters': [],
+                    'type': 'common_endpoint'
                 })
         
         return endpoints

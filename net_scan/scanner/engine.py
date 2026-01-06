@@ -104,51 +104,76 @@ class ScannerEngine:
                 TerminalUI.print_status(f"Found 0 vulnerabilities", "SUCCESS")
                 return self.findings
             
+            logger.info(f"Found {total_endpoints} testable endpoints to scan")
+            
             for i, endpoint in enumerate(endpoints):
-                TerminalUI.print_progress_bar(i, total_endpoints, "Testing endpoints...")
+                TerminalUI.print_progress_bar(i, total_endpoints, f"Testing endpoints ({i}/{total_endpoints})...")
                 
                 url = endpoint['url']
                 method = endpoint['method']
-                parameters = endpoint['parameters']
+                parameters = endpoint.get('parameters', [])
+                endpoint_type = endpoint.get('type', 'unknown')
+                
+                # If no parameters, test the URL path itself
+                if not parameters:
+                    parameters = ['__PATH__']  # Special marker for path testing
                 
                 for param in parameters:
-                    # SQL Injection
-                    if 'sqli' in self.profile_config['tests']:
-                        sqli_detector = SQLInjectionDetector(http_client)
-                        sqli_findings = await sqli_detector.test_url_parameter(url, param, method)
-                        self.findings.extend(sqli_findings)
+                    try:
+                        # Skip if parameter is empty or None
+                        if not param:
+                            continue
+                        
+                        logger.debug(f"Testing {endpoint_type}: {method} {url}?{param}=<payload>")
+                        
+                        # SQL Injection
+                        if 'sqli' in self.profile_config['tests']:
+                            sqli_detector = SQLInjectionDetector(http_client)
+                            sqli_findings = await sqli_detector.test_url_parameter(url, param, method)
+                            self.findings.extend(sqli_findings)
+                        
+                        # XSS
+                        if 'xss' in self.profile_config['tests']:
+                            xss_detector = XSSDetector(http_client)
+                            xss_findings = await xss_detector.test_url_parameter(url, param, method)
+                            self.findings.extend(xss_findings)
+                        
+                        # Command Injection
+                        if 'cmd' in self.profile_config['tests']:
+                            cmd_detector = CommandInjectionDetector(http_client)
+                            cmd_findings = await cmd_detector.test_url_parameter(url, param, method)
+                            self.findings.extend(cmd_findings)
+                        
+                        # Path Traversal
+                        if 'path_traversal' in self.profile_config['tests']:
+                            path_detector = PathTraversalDetector(http_client)
+                            path_findings = await path_detector.test_url_parameter(url, param, method)
+                            self.findings.extend(path_findings)
+                        
+                        # SSRF
+                        if 'ssrf' in self.profile_config['tests']:
+                            ssrf_detector = SSRFDetector(http_client)
+                            ssrf_findings = await ssrf_detector.test_url_parameter(url, param, method)
+                            self.findings.extend(ssrf_findings)
+                        
+                        # XXE
+                        if 'xxe' in self.profile_config['tests']:
+                            xxe_detector = XXEDetector(http_client)
+                            xxe_findings = await xxe_detector.test_url_parameter(url, param, method)
+                            self.findings.extend(xxe_findings)
                     
-                    # XSS
-                    if 'xss' in self.profile_config['tests']:
-                        xss_detector = XSSDetector(http_client)
-                        xss_findings = await xss_detector.test_url_parameter(url, param, method)
-                        self.findings.extend(xss_findings)
-                    
-                    # Command Injection
-                    if 'cmd' in self.profile_config['tests']:
-                        cmd_detector = CommandInjectionDetector(http_client)
-                        cmd_findings = await cmd_detector.test_url_parameter(url, param, method)
-                        self.findings.extend(cmd_findings)
-                    
-                    # Path Traversal
-                    if 'path_traversal' in self.profile_config['tests']:
-                        path_detector = PathTraversalDetector(http_client)
-                        path_findings = await path_detector.test_url_parameter(url, param, method)
-                        self.findings.extend(path_findings)
-                    
-                    # SSRF
-                    if 'ssrf' in self.profile_config['tests']:
-                        ssrf_detector = SSRFDetector(http_client)
-                        ssrf_findings = await ssrf_detector.test_url_parameter(url, param, method)
-                        self.findings.extend(ssrf_findings)
+                    except Exception as e:
+                        logger.debug(f"Error testing {url} parameter {param}: {e}")
                 
-                # CSRF testing on pages
-                if 'csrf' in self.profile_config['tests']:
+                # CSRF testing on pages with endpoint_type indicating forms
+                if 'csrf' in self.profile_config['tests'] and endpoint_type == 'form':
                     for page in self.crawled_pages:
                         if page.url == url:
                             csrf_detector = CSRFDetector(http_client)
                             csrf_findings = await csrf_detector.test_page(url, page.html)
                             self.findings.extend(csrf_findings)
+            
+            TerminalUI.print_progress_bar(total_endpoints, total_endpoints, "Scanning complete...")
             
             TerminalUI.print_progress_bar(total_endpoints, total_endpoints, "Testing endpoints...")
         
