@@ -112,19 +112,36 @@ NET_SCAN automatically identifies **7 critical vulnerability types**:
 
 **Linux users must install system libraries before installing Python dependencies.**
 
-#### Ubuntu/Debian
+#### Kali Linux (Latest - Python 3.13)
 
 ```bash
-# Install required system libraries for lxml and other dependencies
+# Update package lists
+sudo apt update
+
+# Install required system libraries (use python3-dev, NOT python3.11-dev)
+sudo apt install -y python3-dev libxml2-dev libxslt1-dev zlib1g-dev build-essential
+
+# Verify Python version
+python3 --version
+```
+
+**Note:** Kali uses rolling releases, so you may have Python 3.13 or newer. Use `python3-dev` instead of `python3.11-dev`.
+
+#### Ubuntu/Debian (with specific Python 3.11)
+
+```bash
+# Update package lists
 sudo apt-get update
-sudo apt-get install -y python3.11-dev libxml2-dev libxslt1-dev zlib1g-dev
+
+# Install required system libraries
+sudo apt-get install -y python3-dev libxml2-dev libxslt1-dev zlib1g-dev build-essential
 ```
 
 #### Fedora/RHEL/CentOS
 
 ```bash
 # Install required system libraries
-sudo dnf install -y python3-devel libxml2-devel libxslt-devel zlib-devel
+sudo dnf install -y python3-devel libxml2-devel libxslt-devel zlib-devel gcc
 ```
 
 #### macOS
