@@ -93,6 +93,17 @@ class ScannerEngine:
             endpoints = crawler.get_testable_endpoints()
             total_endpoints = len(endpoints)
             
+            # Handle case where no testable endpoints are discovered
+            if total_endpoints == 0:
+                TerminalUI.print_status("No testable endpoints found on target", "WARNING")
+                TerminalUI.print_status("Possible reasons:", "INFO")
+                print("  • Target is a static website with no forms or parameters")
+                print("  • All parameters are protected or read-only")
+                print("  • JavaScript rendering didn't discover dynamic endpoints")
+                TerminalUI.print_progress_bar(0, 1, "Testing endpoints...")
+                TerminalUI.print_status(f"Found 0 vulnerabilities", "SUCCESS")
+                return self.findings
+            
             for i, endpoint in enumerate(endpoints):
                 TerminalUI.print_progress_bar(i, total_endpoints, "Testing endpoints...")
                 

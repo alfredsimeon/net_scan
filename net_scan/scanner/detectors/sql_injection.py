@@ -177,18 +177,22 @@ class SQLInjectionDetector:
                 true_len = len(true_resp.get('content', ''))
                 false_len = len(false_resp.get('content', ''))
                 
-                # If true condition returns more content than false, likely vulnerable
-                if true_len > false_len * 1.1:  # 10% difference threshold
-                    findings.append({
-                        'type': 'SQL Injection (Boolean-based Blind)',
-                        'severity': 'HIGH',
-                        'url': url,
-                        'parameter': param,
-                        'method': method,
-                        'payload': true_payload,
-                        'evidence': f"Response length differs: true={true_len}, false={false_len}",
-                        'cvss_score': 8.2,
-                    })
+                # Guard against zero-length responses - need minimum response data to compare
+                if false_len == 0:
+                    logger.debug(f"Empty response for boolean-based SQLi test: {url}")
+                else:
+                    # If true condition returns more content than false, likely vulnerable
+                    if true_len > 0 and true_len > false_len * 1.1:  # 10% difference threshold
+                        findings.append({
+                            'type': 'SQL Injection (Boolean-based Blind)',
+                            'severity': 'HIGH',
+                            'url': url,
+                            'parameter': param,
+                            'method': method,
+                            'payload': true_payload,
+                            'evidence': f"Response length differs: true={true_len}, false={false_len}",
+                            'cvss_score': 8.2,
+                        })
         
         except Exception as e:
             logger.debug(f"Boolean-based test error: {e}")

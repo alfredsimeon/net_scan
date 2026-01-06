@@ -73,6 +73,13 @@ class TerminalUI:
     @staticmethod
     def print_progress_bar(current: int, total: int, prefix: str = "", length: int = 40):
         """Print animated progress bar"""
+        # Handle edge case: no items to test
+        if total == 0:
+            print(f"\r{prefix} {Fore.YELLOW}[No testable endpoints found]{Style.RESET_ALL}", end="")
+            print()
+            return
+        
+        # Calculate progress percentage and filled bar
         percent = 100 * (current / float(total))
         filled = int(length * current // total)
         bar = "█" * filled + "░" * (length - filled)
